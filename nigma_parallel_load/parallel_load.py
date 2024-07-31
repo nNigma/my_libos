@@ -3,7 +3,7 @@ import polars as pl
 from multiprocessing.pool import ThreadPool
 from datetime import datetime, timedelta
 import logging
-from clickhouse_connect import get_client  # Импортируем get_client
+from clickhouse_connect import get_client
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +28,7 @@ def get_date_range(start_date, end_date, freq='D'):
     else:
         raise ValueError(f"Не поддерживаемая частота. Используйте 'D', 'W' or 'M'.")
 def execute_query(args):
-    date, sql_template, freq, db_params, output_path = args  # Добавлен output_path
+    date, sql_template, freq, db_params, output_path, compression='zstd' = args  
     client = get_client(**db_params)
     
     if freq == 'W':
@@ -45,7 +45,7 @@ def execute_query(args):
         logger.info(f"Processed data for {date.strftime('%Y-%m-%d')}, shape: {df.shape}")
         
         if output_path:  # Если указан путь, записываем в Parquet
-            df.write_parquet(f"{output_path}/data_{date.strftime('%Y%m%d')}.parquet", compression= 'zstd')
+            df.write_parquet(f"{output_path}/data_{date.strftime('%Y%m%d')}.parquet", compression= compression)
             logger.info(f"Saved data for {date.strftime('%Y-%m-%d')} to {output_path}/data_{date.strftime('%Y%m%d')}.parquet")
             return True  # Возвращаем True, если данные сохранены
         else:
@@ -58,7 +58,7 @@ def execute_query(args):
 
 
 
-def nigma_parallel_load(sql_template, start_date, end_date, num_threads=3, freq='D', db_params=None, output_path=None):
+def nigma_parallel_load(sql_template, start_date, end_date, num_threads=3, freq='D', db_params=None, output_path=None, compression='zstd'):
     if db_params is None:
         raise ValueError("Параметры подключения к базе данных не указаны.")
     
@@ -66,7 +66,7 @@ def nigma_parallel_load(sql_template, start_date, end_date, num_threads=3, freq=
     start_time = datetime.now()
 
     with ThreadPool(num_threads) as pool:
-        results = pool.map(execute_query, [(date, sql_template, freq, db_params, output_path) for date in dates])  # Передаем output_path
+        results = pool.map(execute_query, [(date, sql_template, freq, db_params, output_path) for date in dates]) 
     
     end_time = datetime.now()
 
