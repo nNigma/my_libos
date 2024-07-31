@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='my_libos',  # Название вашей библиотеки
+    name='parallel_load',  # Название вашей библиотеки
     version='0.1.0',  # Версия вашей библиотеки
     packages=find_packages(),  # Автоматически находит пакеты
     install_requires=[  # Зависимости, если есть
