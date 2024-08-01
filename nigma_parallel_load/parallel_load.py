@@ -27,6 +27,7 @@ def get_date_range(start_date, end_date, freq='D'):
         return dates[dates <= end_date]
     else:
         raise ValueError(f"Не поддерживаемая частота. Используйте 'D', 'W' or 'M'.")
+
 def execute_query(args):
     date, sql_template, freq, db_params, output_path, *other_args = args  
     compression = other_args[0] if other_args else 'zstd'  # Установка значения по умолчанию
@@ -46,9 +47,9 @@ def execute_query(args):
         logger.info(f"Processed data for {date.strftime('%Y-%m-%d')}, shape: {df.shape}")
         
         if output_path:  # Если указан путь, записываем в Parquet
-            df.write_parquet(f"{output_path}/data_{date.strftime('%Y%m%d')}.parquet", compression= compression)
+            df.write_parquet(f"{output_path}/data_{date.strftime('%Y%m%d')}.parquet", compression=compression)
             logger.info(f"Saved data for {date.strftime('%Y-%m-%d')} to {output_path}/data_{date.strftime('%Y%m%d')}.parquet")
-            return  # Не возвращаем ничего
+            return  True
         else:
             return df  # Возвращаю df, если путь не указан
     except Exception as e:
@@ -56,8 +57,6 @@ def execute_query(args):
         return None
     finally:
         client.close()  # Закрываю клиент после использования
-
-
 
 def nigma_parallel_load(sql_template, start_date, end_date, num_threads=3, freq='D', db_params=None, output_path=None, compression='zstd'):
     if db_params is None:
@@ -74,13 +73,13 @@ def nigma_parallel_load(sql_template, start_date, end_date, num_threads=3, freq=
     # Фильтрую None результаты
     valid_results = [result for result in results if result is not None]
     if valid_results:
-        logger.info(f'Total execution time: {end_time - start_time}')
-        logger.info(f'Processed {len(valid_results)} days of data.')
-        total_size_mb = sum(result.estimated_size() for result in valid_results) / (1024 * 1024)
-        logger.info(f'Total size of the resulting DataFrame: {total_size_mb:.2f} MB')
-        
-        if output_path is None:  # Возвращаем объединенный DataFrame только если output_path не указан
-            return pl.concat(valid_results)  # Объединяю все DataFrame
+        if output_path is None:  # Возвращаю объединенный DataFrame только если output_path не указан
+            df_total = pl.concat(valid_results)
+            logger.info(f'Total execution time: {end_time - start_time}')
+            logger.info(f'Processed {len(valid_results)} days of data.')
+            total_size_mb = sum(df.estimated_size() for df in valid_results) / (1024 * 1024)
+            logger.info(f'Total size of the resulting DataFrame: {total_size_mb:.2f} MB')
+            return df_total
         else:
             logger.info(f'Data saved to {output_path}')
     else:
