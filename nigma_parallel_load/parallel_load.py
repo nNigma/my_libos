@@ -66,7 +66,7 @@ def nigma_parallel_load(sql_template, start_date, end_date, num_threads=3, freq=
     start_time = datetime.now()
 
     with ThreadPool(num_threads) as pool:
-        results = pool.map(execute_query, [(date, sql_template, freq, db_params, output_path) for date in dates]) 
+        results = pool.map(execute_query, [(date, sql_template, freq, db_params, output_path, compression) for date in dates]) 
     
     end_time = datetime.now()
 
