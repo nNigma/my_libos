@@ -48,7 +48,7 @@ def execute_query(args):
         if output_path:  # Если указан путь, записываем в Parquet
             df.write_parquet(f"{output_path}/data_{date.strftime('%Y%m%d')}.parquet", compression= compression)
             logger.info(f"Saved data for {date.strftime('%Y-%m-%d')} to {output_path}/data_{date.strftime('%Y%m%d')}.parquet")
-            return df  # Возвращаю True, если данные сохранены
+            return None
         else:
             return df  # Возвращаю df, если путь не указан
     except Exception as e:
@@ -78,6 +78,9 @@ def nigma_parallel_load(sql_template, start_date, end_date, num_threads=3, freq=
         logger.info(f'Processed {len(valid_results)} days of data.')
         total_size_mb = sum(result.estimated_size() for result in valid_results) / (1024 * 1024)
         logger.info(f'Total size of the resulting DataFrame: {total_size_mb:.2f} MB')
+        
+        if output_path is None:  # Возвращаем объединенный DataFrame только если output_path не указан
+            return pl.concat(valid_results)  # Объединяю все DataFrame
     else:
         logger.warning('No data to load')
         return pl.DataFrame()
