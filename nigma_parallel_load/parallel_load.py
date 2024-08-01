@@ -28,7 +28,8 @@ def get_date_range(start_date, end_date, freq='D'):
     else:
         raise ValueError(f"Не поддерживаемая частота. Используйте 'D', 'W' or 'M'.")
 def execute_query(args):
-    date, sql_template, freq, db_params, output_path, compression='zstd' = args  
+    date, sql_template, freq, db_params, output_path, *other_args = args  # Изменено на распаковку
+    compression = other_args[0] if other_args else 'zstd'  # Установка значения по умолчанию
     client = get_client(**db_params)
     
     if freq == 'W':
