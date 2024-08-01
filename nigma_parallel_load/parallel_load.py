@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def get_date_range(start_date, end_date, freq='D'):
-    # Преобразуем строки в datetime, если это необходимо
+    # Преобразую строки в datetime, если это необходимо
     if isinstance(start_date, str):
         start_date = pd.to_datetime(start_date)
     if isinstance(end_date, str):
@@ -21,14 +21,14 @@ def get_date_range(start_date, end_date, freq='D'):
     elif freq == 'W':
         return pd.date_range(start=start_date, end=end_date, freq='W-MON')
     elif freq == 'M':
-        # Генерируем месяцы, начиная с первого числа
+        # Генерирую месяцы, начиная с первого числа
         dates = pd.date_range(start=start_date.replace(day=1), end=end_date, freq='MS')
-        # Убираем последнюю дату, если она выходит за пределы end_date
+        # Убираю последнюю дату, если она выходит за пределы end_date
         return dates[dates <= end_date]
     else:
         raise ValueError(f"Не поддерживаемая частота. Используйте 'D', 'W' or 'M'.")
 def execute_query(args):
-    date, sql_template, freq, db_params, output_path, *other_args = args  # Изменено на распаковку
+    date, sql_template, freq, db_params, output_path, *other_args = args  
     compression = other_args[0] if other_args else 'zstd'  # Установка значения по умолчанию
     client = get_client(**db_params)
     
@@ -48,14 +48,14 @@ def execute_query(args):
         if output_path:  # Если указан путь, записываем в Parquet
             df.write_parquet(f"{output_path}/data_{date.strftime('%Y%m%d')}.parquet", compression= compression)
             logger.info(f"Saved data for {date.strftime('%Y-%m-%d')} to {output_path}/data_{date.strftime('%Y%m%d')}.parquet")
-            return True  # Возвращаем True, если данные сохранены
+            return True  # Возвращаю True, если данные сохранены
         else:
-            return df  # Возвращаем df, если путь не указан
+            return df  # Возвращаю df, если путь не указан
     except Exception as e:
         logger.error(f"Error processing data for {date.strftime('%Y-%m-%d')}: {str(e)}")
         return None
     finally:
-        client.close()  # Закрываем клиент после использования
+        client.close()  # Закрываю клиент после использования
 
 
 
@@ -71,7 +71,7 @@ def nigma_parallel_load(sql_template, start_date, end_date, num_threads=3, freq=
     
     end_time = datetime.now()
 
-    # Фильтруем None результаты
+    # Фильтрую None результаты
     valid_results = [result for result in results if result is not None]
     if valid_results:
         logger.info(f'Total execution time: {end_time - start_time}')
