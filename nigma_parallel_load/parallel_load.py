@@ -81,6 +81,8 @@ def nigma_parallel_load(sql_template, start_date, end_date, num_threads=3, freq=
         
         if output_path is None:  # Возвращаем объединенный DataFrame только если output_path не указан
             return pl.concat(valid_results)  # Объединяю все DataFrame
+        else:
+            logger.info(f'Data saved to {output_path}')
     else:
         logger.warning('No data to load')
         return pl.DataFrame()
