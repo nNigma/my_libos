@@ -48,7 +48,7 @@ def execute_query(args):
         if output_path:  # Если указан путь, записываем в Parquet
             df.write_parquet(f"{output_path}/data_{date.strftime('%Y%m%d')}.parquet", compression= compression)
             logger.info(f"Saved data for {date.strftime('%Y-%m-%d')} to {output_path}/data_{date.strftime('%Y%m%d')}.parquet")
-            return None
+            return  # Не возвращаем ничего
         else:
             return df  # Возвращаю df, если путь не указан
     except Exception as e:
